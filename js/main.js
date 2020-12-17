@@ -87,8 +87,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setClock('.timer', deadline);
 
     const modalBtn = document.querySelectorAll('[data-modal]'),
-          modal = document.querySelector('.modal'),
-          modalCloser = document.querySelector('.modal__close');
+          modal = document.querySelector('.modal');
 
     modalBtn.forEach(button => {
         button.addEventListener('click', () => {
@@ -96,10 +95,8 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    modalCloser.addEventListener('click', closeModal);
-
     modal.addEventListener('click', event => {
-        if (event.target && event.target === modal) {
+        if (event.target && event.target === modal || event.target.getAttribute('data-close') == '') {
             closeModal();
         }
     });
@@ -210,7 +207,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     const message = {
-        loading: 'Идет загрузка...',
+        loading: 'img/form/spinner.svg',
         succsess: 'Скоро мы с вами свяжемся!',
         failure: 'Что-то пошло не так :('
     };
@@ -218,11 +215,14 @@ window.addEventListener('DOMContentLoaded', () => {
     function postData(form) {
         form.addEventListener('submit', e => {
             e.preventDefault();
-
-            let statusMessage = document.createElement('div');
-            statusMessage.textContent = message.loading;
-            statusMessage.style = 'text-align: center';
-            form.appendChild(statusMessage);
+            
+            let statusMessage = document.createElement('img');
+            statusMessage.src = message.loading;
+            statusMessage.style.cssText = `
+            display: block; 
+            margin: 0 auto;
+            `;
+            form.insertAdjacentElement('afterend', statusMessage);
 
             const request = new XMLHttpRequest();
             request.open('POST', 'server.php');
@@ -238,19 +238,59 @@ window.addEventListener('DOMContentLoaded', () => {
             let json = JSON.stringify(object);
 
             request.send(json);
+            
+            dontLoopSubmit(true);
+            
+            console.log(submitBtn);
 
             request.addEventListener('load', () => {
                 if (request.status == 200) {
                     console.log(request.response);
-                    statusMessage.textContent = message.succsess;
+                    showThanksModal(message.succsess);
                     form.reset();
-                    setTimeout(function(){
-                        statusMessage.remove();
-                    }, 2000);
+                    statusMessage.remove();
                 } else {
-                    statusMessage.textContent = message.failure;
+                    showThanksModal(message.failure);
                 }
             });
         });
+    }
+
+    const submitBtn = document.querySelectorAll('.btn__submit');
+    function dontLoopSubmit(boolean) {
+        if(boolean == true) {
+            submitBtn.forEach(item => {
+                item.setAttribute('disabled', 'true');
+            });
+        } else {
+            submitBtn.forEach(item => {
+                item.removeAttribute('disabled', 'true');
+            });
+        }
+    }
+
+    function showThanksModal(message) {
+        const prevModal = document.querySelector('.modal__dialog');
+        prevModal.classList.add('hide');
+        prevModal.classList.remove('show');
+        openModal();
+
+        const thanksModal = document.createElement('div');
+        thanksModal.classList.add('modal__dialog');
+        thanksModal.innerHTML = `
+        <div class="modal__content">
+            <div class="modal__close" data-close>×</div>
+            <div class="modal__title">${message}</div>
+        </div>
+        `;
+        modal.append(thanksModal);
+
+        setTimeout(() => {
+            thanksModal.classList.add('hide');
+            prevModal.classList.remove('hide');
+            prevModal.classList.add('show');
+            closeModal();
+            dontLoopSubmit(false);
+        }, 4000);
     }
 });
