@@ -110,7 +110,7 @@ window.addEventListener('DOMContentLoaded', () => {
     function closeModal() {
         modal.classList.add('hide');
         modal.classList.remove('show');
-        const form = document.querySelector('.modal-form').reset();
+        document.querySelector('.modal-form').reset();
         document.body.style.overflow = '';
     }
 
@@ -224,9 +224,6 @@ window.addEventListener('DOMContentLoaded', () => {
             `;
             form.insertAdjacentElement('afterend', statusMessage);
 
-            const request = new XMLHttpRequest();
-            request.open('POST', 'server.php');
-            request.setRequestHeader('Content-type', 'application/json; charset=utf-8');
             const formData = new FormData(form);
 
             const object = {};
@@ -235,23 +232,26 @@ window.addEventListener('DOMContentLoaded', () => {
                 object[key] = item;
             });
 
-            let json = JSON.stringify(object);
-
-            request.send(json);
-            
             dontLoopSubmit(true);
-            
-            console.log(submitBtn);
 
-            request.addEventListener('load', () => {
-                if (request.status == 200) {
-                    console.log(request.response);
-                    showThanksModal(message.succsess);
-                    form.reset();
-                    statusMessage.remove();
-                } else {
-                    showThanksModal(message.failure);
-                }
+            fetch('server.php', {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(object)
+            }).then(data => data.text())
+            .then(data => {
+                console.log(data);
+                showThanksModal(message.succsess);
+            })
+            .catch(() => {
+                showThanksModal(message.failure);
+            })
+            .finally(() => {
+                form.reset();
+                statusMessage.remove();
+                dontLoopSubmit(false);
             });
         });
     }
@@ -286,11 +286,10 @@ window.addEventListener('DOMContentLoaded', () => {
         modal.append(thanksModal);
 
         setTimeout(() => {
-            thanksModal.classList.add('hide');
+            thanksModal.remove();
             prevModal.classList.remove('hide');
             prevModal.classList.add('show');
             closeModal();
-            dontLoopSubmit(false);
         }, 4000);
     }
 });
