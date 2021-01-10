@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/yaroslavff/Food#readme",
   "devDependencies": {
-    "json-server": "^0.16.3"
-  }
+    "json-server": "^0.16.3",
+    "webpack": "^5.12.2",
+    "webpack-cli": "^4.3.1"
+  },
+  "dependencies": {}
 }
