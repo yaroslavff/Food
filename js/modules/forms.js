@@ -1,4 +1,7 @@
-function forms() {
+import {openModal, closeModal} from './modal';
+import {modal} from './modal';
+
+function forms(modalSelector) {
     const allForms = document.querySelectorAll('form');
 
     allForms.forEach(item => {
@@ -73,7 +76,7 @@ function forms() {
         const prevModal = document.querySelector('.modal__dialog');
         prevModal.classList.add('hide');
         prevModal.classList.remove('show');
-        openModal();
+        openModal(modalSelector);
 
         const thanksModal = document.createElement('div');
         thanksModal.classList.add('modal__dialog');
@@ -83,15 +86,15 @@ function forms() {
             <div class="modal__title">${message}</div>
         </div>
         `;
-        modal.append(thanksModal);
+        document.querySelector(modalSelector).append(thanksModal);
 
         setTimeout(() => {
             thanksModal.remove();
             prevModal.classList.remove('hide');
             prevModal.classList.add('show');
-            closeModal();
+            closeModal(modalSelector);
         }, 4000);
     }
 }
 
-module.exports = forms;
+export default forms;
