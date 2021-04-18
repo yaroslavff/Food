@@ -55,6 +55,14 @@ window.addEventListener("DOMContentLoaded", () => {
         };
     }
 
+    function getZero(n) {
+        if(n < 10) {
+            return `0${n}`;
+        } else {
+            return n;
+        }
+    }
+
     function setTimeInTimer(selector, endtime) {
 
         const timer = document.querySelector(selector);
@@ -71,14 +79,63 @@ window.addEventListener("DOMContentLoaded", () => {
                 return clearInterval(clockInterval);
             }
 
-            days.textContent = t.days;
-            hours.textContent = t.hours;
-            minutes.textContent = t.minutes;
-            seconds.textContent = t.seconds;
+            days.textContent = getZero(t.days);
+            hours.textContent = getZero(t.hours);
+            minutes.textContent = getZero(t.minutes);
+            seconds.textContent = getZero(t.seconds);
         }
 
     }
 
     setTimeInTimer(".timer", deadline);
+
+    // Modal
+
+    const modal = document.querySelector(".modal");
+    const modalBtn = document.querySelectorAll("[data-modal]");
+    const closeModalBtn = document.querySelector("[data-close]");
+    const modalTimeout = setTimeout(showModal, 40000);
+    
+    modalBtn.forEach(item => {
+        item.addEventListener("click", ()=> {
+            showModal();
+        });
+    });
+
+    modal.addEventListener("click", (e) => {
+        if((e.target && e.target == closeModalBtn) || e.target == modal) {
+            hideModal();
+        }
+    });
+
+    document.addEventListener("keyup", (e) => {
+
+        if(e.code == "Escape" && modal.classList.contains("show")) {
+            hideModal();
+        }
+    });
+
+    document.addEventListener("scroll", showModalByScroll);
+
+    function hideModal() {
+        modal.classList.add("hide");
+        modal.classList.remove("show");
+        document.body.style.overflow = "visible";
+        
+        document.removeEventListener("scroll", showModalByScroll);
+    }
+
+    function showModal() {
+        modal.classList.add("show");
+        modal.classList.remove("hide");
+        document.body.style.overflow = "hidden";
+        clearTimeout(modalTimeout);
+    }
+
+    function showModalByScroll() {
+        if(document.documentElement.scrollHeight <= document.documentElement.clientHeight + window.pageYOffset) {
+            showModal();
+        }
+    }
     
 });
