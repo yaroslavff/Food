@@ -199,5 +199,56 @@ window.addEventListener("DOMContentLoaded", () => {
         430,
         foodCardContainer
     ).render();
+
+    // Form
+
+    const form = document.querySelectorAll("form");
+    const messages = {
+        succsess: "Спасибо, скоро мы с вами свяжемся!",
+        loading: "Идёт загрузка...",
+        error: "Что-то пошло не так...("
+    };
+
+    form.forEach(item => {
+        postData(item);
+    });
+
+    function postData(form) {
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const statusMessage = document.createElement("div");
+            statusMessage.classList.add("status");
+            statusMessage.textContent = messages.loading;
+            form.appendChild(statusMessage);
+
+            const request = new XMLHttpRequest();
+            request.open("POST", "server.php");
+            
+            const formData = new FormData(form);
+
+            const object = {};
+            formData.forEach((value, key) => {
+                object[key] = value;
+            });
+            const json = JSON.stringify(object);
+
+            request.send(json);
+
+            request.addEventListener("load", () => {
+
+                if(request.readyState === 4 && request.status === 200) {
+                    statusMessage.textContent = messages.succsess;
+                    form.reset();
+                    setTimeout(() => {
+                        statusMessage.remove();
+                    }, 2000);
+                    console.log(request.response);
+                } else {
+                    statusMessage.textContent = messages.error;
+                }
+            });
+        });
+    }
     
 });
