@@ -224,10 +224,6 @@ window.addEventListener("DOMContentLoaded", () => {
             `;
             form.insertAdjacentElement("afterend", statusMessage);
             form.querySelector("button").disabled = true;
-            // form.append(statusMessage);
-
-            const request = new XMLHttpRequest();
-            request.open("POST", "server.php");
             
             const formData = new FormData(form);
 
@@ -235,23 +231,26 @@ window.addEventListener("DOMContentLoaded", () => {
             formData.forEach((value, key) => {
                 object[key] = value;
             });
-            const json = JSON.stringify(object);
 
-            request.send(json);
-
-            request.addEventListener("load", () => {
-
-                if(request.readyState === 4 && request.status === 200) {
-                    showThanksModal(messages.succsess);
-                    form.querySelector("button").disabled = false;
-                    form.reset();
-                    statusMessage.remove();
-                    console.log(request.response);
-                } else {
-                    showThanksModal(messages.error);
-                    form.querySelector("button").disabled = false;
-                    statusMessage.remove();
-                }
+            fetch("server.php", {
+                method: "POST",
+                headers: {
+                    "Content-type": "application/json;charset=utf-8"
+                },
+                body: JSON.stringify(object)
+            })
+            .then(serverResponse => serverResponse.text())
+            .then(data => {
+                showThanksModal(messages.succsess);
+                console.log(data);
+            })
+            .catch(() => {
+                showThanksModal(messages.error);
+            })
+            .finally(() => {
+                form.querySelector("button").disabled = false;
+                statusMessage.remove();
+                form.reset();
             });
         });
     }
