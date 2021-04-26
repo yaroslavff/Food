@@ -139,17 +139,18 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // Food Card
 
-    const foodCardContainer = document.querySelector(".menu__field .container");
+    const foodCardContainer = document.querySelector(".menu .container");
     foodCardContainer.innerHTML = "";
 
     class FoodCard {
-        constructor(src, title, descr, price, parent) {
+        constructor(src, alt, title, descr, price, parent) {
             this.src = src;
+            this.alt = alt;
             this.title = title;
             this.descr = descr;
             this.price = price;
             this.parent = parent;
-            this.transfer = 2.7;
+            this.transfer = 75;
             this.changeToRUB();
         }
 
@@ -161,7 +162,7 @@ window.addEventListener("DOMContentLoaded", () => {
             const element = document.createElement("div");
             element.classList.add("menu__item");
             element.innerHTML = `
-                <img src="img/tabs/${this.src}.jpg" alt=${this.src}>
+                <img src="${this.src}" alt=${this.alt}>
                 <h3 class="menu__item-subtitle">${this.title}</h3>
                 <div class="menu__item-descr">${this.descr}</div>
                 <div class="menu__item-divider"></div>
@@ -175,29 +176,30 @@ window.addEventListener("DOMContentLoaded", () => {
 
     }
 
-    new FoodCard(
-        "vegy",
-        "Меню “Фитнес”",
-        "Меню “Фитнес” - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!",
-        229,
-        foodCardContainer
-    ).render();
+    const getData = async (url) => {
+        const res = await fetch(url);
 
-    new FoodCard(
-        "elite",
-        "Меню “Премиум”",
-        "В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!",
-        550,
-        foodCardContainer
-    ).render();
+        if(!res.ok) {
+            throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+        }
 
-    new FoodCard(
-        "post",
-        "Меню “Постное”",
-        "Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.",
-        430,
-        foodCardContainer
-    ).render();
+        return await res.json();
+    };
+
+
+    getData("http://localhost:3000/menu")
+    .then(result => {
+        result.forEach(({img, altimg, title, descr, price}) => {
+            new FoodCard(
+                img,
+                altimg,
+                title,
+                descr,
+                price,
+                foodCardContainer
+            ).render();
+        });
+    });
 
     // Form
 
@@ -209,10 +211,22 @@ window.addEventListener("DOMContentLoaded", () => {
     };
 
     form.forEach(item => {
-        postData(item);
+        bindPostData(item);
     });
 
-    function postData(form) {
+    const postData = async (url, data) => {
+        const result = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-type": "application/json;charset=utf-8"
+            },
+            body: data
+        });
+
+        return await result.json();
+    };
+
+    function bindPostData(form) {
         form.addEventListener("submit", (e) => {
             e.preventDefault();
 
@@ -227,19 +241,9 @@ window.addEventListener("DOMContentLoaded", () => {
             
             const formData = new FormData(form);
 
-            const object = {};
-            formData.forEach((value, key) => {
-                object[key] = value;
-            });
+            const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
-            fetch("server.php", {
-                method: "POST",
-                headers: {
-                    "Content-type": "application/json;charset=utf-8"
-                },
-                body: JSON.stringify(object)
-            })
-            .then(serverResponse => serverResponse.text())
+            postData("http://localhost:3000/requests", json)
             .then(data => {
                 showThanksModal(messages.succsess);
                 console.log(data);
