@@ -290,6 +290,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // slider
 
+    const slider = document.querySelector(".offer__slider");
     const slides = document.querySelectorAll(".offer__slide");
     const currentSlideCounter = document.querySelector("#current");
     const totalSlideCounter = document.querySelector("#total");
@@ -298,11 +299,18 @@ window.addEventListener("DOMContentLoaded", () => {
     const slidesWrapper = document.querySelector(".offer__slider-wrapper");
     const slidesField = document.querySelector(".offer__slider-inner");
     const width = window.getComputedStyle(slidesWrapper).width;
+    const sliderNav = document.createElement("div");
     let current = 1;
     let offset = 0;
+    let dot = [];
 
     totalSlideCounter.textContent = getZero(slides.length);
     currentSlideCounter.textContent = getZero(current);
+
+    slider.style.position = "relative";
+    sliderNav.classList.add("carousel-indicators");
+
+    slider.append(sliderNav);
     
     slidesField.style.cssText = `
         width: ${100 * slides.length}%;
@@ -346,32 +354,38 @@ window.addEventListener("DOMContentLoaded", () => {
             current = 1;
         }
         
-        currentSlideCounter.textContent = getZero(current);
+        getCurrentSlide(current);
         slidesField.style.transform = `translateX(-${offset}px)`;
     }
+
+    for(let i = 0; i < slides.length; i++) {
+        dot[i] = document.createElement("input");
+    }
+
+    dot.forEach((input, i) => {
+        input.type = "radio"
+        input.id = `slide${i}`;
+        input.classList.add("dot");
+        input.name = "slider";
+        sliderNav.append(input);
+        input.addEventListener("click", (e) => {
+            if(e.target && e.target.id === `slide${i}`) {
+                selectSlideForNav(i)
+            }
+        });
+    });
     
-    // prevSlide.addEventListener("click", () => {
-    //     plusSlide(-1);
-    // });
+    function getCurrentSlide(curr) {
+        dot[curr - 1].checked = true;
+        currentSlideCounter.textContent = getZero(curr);
+    }
 
-    // nextSlide.addEventListener("click", () => {
-    //     plusSlide(1);
-    // });
+    function selectSlideForNav(i) {
+            offset = width.slice(0, -2) * i++;
+            current = i++;
 
-    // function plusSlide(n) {
-    //     showSlide(slides, current += n);
-    // }
+            showSlide(current, offset);
+    }
 
-    // function showSlide(slider, curr) {
-    //     slides.forEach(slide => {
-    //         slide.classList.add("hide");
-    //         slide.classList.remove("show");
-    //     });
-
-
-    //     slider[current - 1].classList.add("show");
-    //     slider[current - 1].classList.remove("hide");
-    //     currentSlideCounter.textContent = getZero(current);
-
-    // }
+    showSlide(current, offset);
 });
