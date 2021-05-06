@@ -299,10 +299,10 @@ window.addEventListener("DOMContentLoaded", () => {
     const slidesWrapper = document.querySelector(".offer__slider-wrapper");
     const slidesField = document.querySelector(".offer__slider-inner");
     const width = window.getComputedStyle(slidesWrapper).width;
-    const sliderNav = document.createElement("div");
+    const sliderNav = document.createElement("ul");
     let current = 1;
     let offset = 0;
-    let dot = [];
+    let dots = [];
 
     totalSlideCounter.textContent = getZero(slides.length);
     currentSlideCounter.textContent = getZero(current);
@@ -347,6 +347,21 @@ window.addEventListener("DOMContentLoaded", () => {
         showSlide(current, offset);
     });
 
+    for(let i = 0; i < slides.length; i++) {
+        dots[i] = document.createElement("li");
+    }
+
+    dots.forEach((slideBtn, i) => {
+        slideBtn.id = `slide${i}`;
+        slideBtn.classList.add("dot");
+        sliderNav.append(slideBtn);
+        slideBtn.addEventListener("click", (e) => {
+            if(e.target && e.target.id === `slide${i}`) {
+                selectSlideForNav(i)
+            }
+        });
+    });
+
     function showSlide(n, offset) {
         if(n < 1) {
             current = slides.length;
@@ -357,34 +372,18 @@ window.addEventListener("DOMContentLoaded", () => {
         getCurrentSlide(current);
         slidesField.style.transform = `translateX(-${offset}px)`;
     }
-
-    for(let i = 0; i < slides.length; i++) {
-        dot[i] = document.createElement("input");
-    }
-
-    dot.forEach((input, i) => {
-        input.type = "radio"
-        input.id = `slide${i}`;
-        input.classList.add("dot");
-        input.name = "slider";
-        sliderNav.append(input);
-        input.addEventListener("click", (e) => {
-            if(e.target && e.target.id === `slide${i}`) {
-                selectSlideForNav(i)
-            }
-        });
-    });
     
     function getCurrentSlide(curr) {
-        dot[curr - 1].checked = true;
+        dots.forEach(dot => dot.style.opacity = 0.5);
+        dots[curr - 1].style.opacity = 1;
         currentSlideCounter.textContent = getZero(curr);
     }
 
     function selectSlideForNav(i) {
-            offset = width.slice(0, -2) * i++;
-            current = i++;
+        offset = width.slice(0, -2) * i++;
+        current = i++;
 
-            showSlide(current, offset);
+        showSlide(current, offset);
     }
 
     showSlide(current, offset);
