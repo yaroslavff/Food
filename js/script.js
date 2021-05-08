@@ -247,7 +247,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
             const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
-            postData("http://localhost:3000/requests1", json)
+            postData("http://localhost:3000/requests", json)
             .then(data => {
                 showThanksModal(messages.succsess);
                 console.log(data);
@@ -324,10 +324,10 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     nextSlide.addEventListener("click", () => {
-        if(offset === +width.slice(0, -2) * (slides.length - 1)) {
+        if(offset === deleteNotDigits(width) * (slides.length - 1)) {
             offset = 0;
         } else {
-            offset += +width.slice(0, -2);
+            offset += deleteNotDigits(width);
         }
         
         current++;
@@ -337,9 +337,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
     prevSlide.addEventListener("click", () => {
         if(offset === 0) {
-            offset = +width.slice(0, -2) * (slides.length - 1);
+            offset = deleteNotDigits(width) * (slides.length - 1);
         } else {
-            offset -= +width.slice(0, -2);
+            offset -= deleteNotDigits(width);
         }
 
         current--;
@@ -386,5 +386,90 @@ window.addEventListener("DOMContentLoaded", () => {
         showSlide(current, offset);
     }
 
+    function deleteNotDigits(string) {
+        return +string.replace(/\D/g, '');
+    }
+
     showSlide(current, offset);
+
+    // Calc
+
+    const result = document.querySelector(".calculating__result span");
+    // const choiceBtns = document.querySelectorAll(".calculating__choose-item");
+    // const choiceInput = document.querySelectorAll("input.calculating__choose-item");
+    let sex = "woman", height, weight, age, activity = 1.375, total;
+
+    if(!height) {
+        console.log(!height);
+    }
+
+    function calcTotal() {
+        if(sex === "man") {
+            total = Math.round((88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age)) * activity);
+        } else {
+            total = Math.round((447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age)) * activity);
+        }
+
+        if(!height || !weight || !age || !activity) {
+            result.textContent = "______";
+        } else {
+            result.textContent = total;
+        }
+
+    }
+
+    function getStaticProps(parent) {
+        const elements = document.querySelectorAll(`${parent} div`);
+
+        document.querySelector(parent).addEventListener("click", e => {
+            if(e.target.classList.contains("calculating__choose-item")) {
+                if(e.target.dataset.ratio) {
+                    activity = +e.target.dataset.ratio;
+                    console.log(activity);
+                } else {
+                    sex = e.target.id;
+                    console.log(sex);
+                }
+    
+                elements.forEach(item => {
+                    item.classList.remove("calculating__choose-item_active");
+    
+                    if(e.target == item) {
+                        item.classList.add("calculating__choose-item_active");
+                    }
+                });
+            }
+
+            calcTotal();
+        });
+    }
+
+    function getInputProps(parent) {
+        const input = document.querySelector(parent);
+
+        input.addEventListener("input", () => {
+            switch(input.id) {
+                case "height":
+                    height = +input.value;
+                    break;
+                case "weight":
+                    weight = +input.value;
+                    break;
+                case "age":
+                    age = +input.value;
+                    break;
+            }
+
+            calcTotal();
+        });
+    }
+
+    getStaticProps("#gender");
+    getStaticProps("#activity");
+
+    getInputProps("#height");
+    getInputProps("#weight");
+    getInputProps("#age");
+
+    calcTotal();
 });
