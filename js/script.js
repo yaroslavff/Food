@@ -395,12 +395,20 @@ window.addEventListener("DOMContentLoaded", () => {
     // Calc
 
     const result = document.querySelector(".calculating__result span");
-    // const choiceBtns = document.querySelectorAll(".calculating__choose-item");
-    // const choiceInput = document.querySelectorAll("input.calculating__choose-item");
-    let sex = "woman", height, weight, age, activity = 1.375, total;
+    let sex, height, weight, age, activity, total;
 
-    if(!height) {
-        console.log(!height);
+    if(localStorage.getItem("sex")) {
+        sex = localStorage.sex;
+    } else {
+        sex = "woman";
+        localStorage.setItem("sex", sex);
+    }
+    
+    if(localStorage.getItem("activity")) {
+        activity = localStorage.activity;
+    } else {
+        activity = 1.375;
+        localStorage.setItem("activity", activity);
     }
 
     function calcTotal() {
@@ -421,14 +429,24 @@ window.addEventListener("DOMContentLoaded", () => {
     function getStaticProps(parent) {
         const elements = document.querySelectorAll(`${parent} div`);
 
+        elements.forEach(item => {
+            item.classList.remove("calculating__choose-item_active");
+
+            if(localStorage.sex == item.id) {
+                item.classList.add("calculating__choose-item_active");
+            } if(localStorage.activity == item.dataset.ratio) {
+                item.classList.add("calculating__choose-item_active");
+            }
+        });
+
         document.querySelector(parent).addEventListener("click", e => {
             if(e.target.classList.contains("calculating__choose-item")) {
                 if(e.target.dataset.ratio) {
                     activity = +e.target.dataset.ratio;
-                    console.log(activity);
+                    localStorage.setItem("activity", +e.target.dataset.ratio);
                 } else {
                     sex = e.target.id;
-                    console.log(sex);
+                    localStorage.setItem("sex", e.target.id);
                 }
     
                 elements.forEach(item => {
@@ -448,6 +466,14 @@ window.addEventListener("DOMContentLoaded", () => {
         const input = document.querySelector(parent);
 
         input.addEventListener("input", () => {
+
+            if(!!input.value.match(/\D/g)) {
+                input.style.border = "1px solid red";
+            } else {
+                input.style.border = "none";
+            }
+
+
             switch(input.id) {
                 case "height":
                     height = +input.value;
@@ -463,7 +489,6 @@ window.addEventListener("DOMContentLoaded", () => {
             calcTotal();
         });
     }
-
     getStaticProps("#gender");
     getStaticProps("#activity");
 
@@ -472,4 +497,30 @@ window.addEventListener("DOMContentLoaded", () => {
     getInputProps("#age");
 
     calcTotal();
+
+
+    class Mashine {
+        constructor(mark, fast) {
+            this.mark = mark;
+        }
+
+        
+        #fast = 302;
+
+        set speed(fast) {
+            this.#fast = fast;
+        }
+
+        sayAbout = () => {
+            console.log(`This car is ${this.mark}, his can ${this.#fast} km/h`)
+        }
+
+    }
+
+
+    const a = new Mashine("bmw", 240);
+
+    a.speed(40);
+
+    a.sayAbout();
 });
